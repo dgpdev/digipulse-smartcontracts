@@ -26,6 +26,7 @@ contract DgpsToken is StandardToken, SafeMath {
 
   uint public exchangeRate = 10000;
   uint public contractLastPayout = 0;
+  uint public lastBalanceUpdate = 0;
 
 
   struct DGPS_Holder {
@@ -47,14 +48,20 @@ contract DgpsToken is StandardToken, SafeMath {
     balances[this] = 500 * 1e18;
     totalSupply = 500 * 1e18;
     contractLastPayout = now;
+    lastBalanceUpdate = now;
   }
 
   function () payable {
 
   }
 
+
+  /*
+   * Callable by anyone - This updates the balances and proceeds to payout
+   * see comment below at distributeProfits()
+  */
   function updateBalances() {
-    require(now > contractLastPayout + 4 weeks);
+    require(now > lastBalanceUpdate + 4 weeks);
     require(tokenholderCounter > 0);
 
     uint contractBalance = this.balance / 2;
@@ -68,8 +75,38 @@ contract DgpsToken is StandardToken, SafeMath {
       HOLDERS[holderArray[i]].ProfitBalance = HOLDERS[holderArray[i]].ProfitBalance + entitledPayoutUserprofit;
     }
 
+    lastBalanceUpdate = now;
+  }
+
+
+  /*
+   * Called seperatly for unit tests. Should be called at the end of updateBalances()
+   * Make this private or internal afterwards
+   *
+   * Pays out all user and company profits.
+  */
+  function distributeProfits() {
+    require(tokenholderCounter > 0);
+    uint payoutAmount = 0;
+
+    for (uint i = 0; i < countHolders(); i++) {
+
+      address _to = HOLDERS[holderArray[i]].HolderAddress;
+      uint _amount = HOLDERS[holderArray[i]].ProfitBalance;
+
+      if (!_to.send(_amount)) {
+        revert();
+      }
+
+      payoutAmount = payoutAmount + HOLDERS[holderArray[i]].ProfitBalance;
+      HOLDERS[holderArray[i]].ProfitBalance = 0;
+      HOLDERS[holderArray[i]].ReceivedProfitsDate = now;
+
+    }
+
     contractLastPayout = now;
   }
+
 
   /*
    * Used for DGPT deposit and exchanging to DgpsToken
@@ -122,6 +159,24 @@ contract DgpsToken is StandardToken, SafeMath {
     Transfer(0x0, _address, _amount);
   }
 
+
+  /*
+   * Used for unit Unit Testing
+  */
+  function addDGPSholder(address _address, uint _amount) public {
+    var account = HOLDERS[_address];
+
+    account.DgpsAmount = _amount;
+    account.ReceivedProfitsDate = now;
+    account.ProfitBalance = 0;
+    account.HolderAddress = _address;
+    account.DigiPulseAmount = _amount * exchangeRate;
+
+    holderArray.push(_address);
+    tokenholderCounter++;
+
+    Transfer(0x0, _address, _amount);
+  }
 
   function balanceOf(address token, address user) constant returns(uint) {
     return tokens[token][user];
