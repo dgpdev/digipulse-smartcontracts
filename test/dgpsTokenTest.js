@@ -1,6 +1,7 @@
 var dgpsTokenContract = artifacts.require("../dgps/DgpsToken.sol");
 var dgptFake = artifacts.require("../dgps/DigiPulse.sol");
 
+
 contract('DGPS approval, deposit and exchange functions', function(accounts) {
 
   it("should create the DGPS contract and have 500 DGPS tokens in contract", async function () {
@@ -78,6 +79,5 @@ contract('DGPS approval, deposit and exchange functions', function(accounts) {
     let checkAccountDGPTbalance = await DGPT.balanceOf.call(accounts[0]);
     assert.equal(checkAccountDGPTbalance.toNumber(), 50000 * 1e18, "3");
   });
-
 
 });
