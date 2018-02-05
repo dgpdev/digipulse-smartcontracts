@@ -116,7 +116,6 @@ contract('DGPS approval, deposit and exchange functions', function(accounts) {
 
     let userProfits = await DGPS.getHolderProfitBalance(accounts[0]);
     assert.equal(userProfits.valueOf(), 0, "2 Supply did not matched expected value");
-
   })
 
   it("Payout has been made automatically, profitbalance should be 0 again.", async function () {
@@ -125,8 +124,6 @@ contract('DGPS approval, deposit and exchange functions', function(accounts) {
     let userProfitsAfterUpdate = await DGPS.getHolderProfitBalance(accounts[0]);
     assert.equal(userProfitsAfterUpdate.valueOf(), 0, "Supply did not matched expected value");
   })
-
-
   // Keep this for end.
   it('Withdraw DGPT. Accounts should have the funds back', async function() {
     let DGPS = await dgpsTokenContract.deployed();
@@ -152,6 +149,7 @@ contract('DGPS approval, deposit and exchange functions', function(accounts) {
   });
 
 });
+
 
 contract('Test with fake balances and fake accounts', function(accounts) {
 
@@ -245,11 +243,6 @@ contract('Test with fake balances and fake accounts', function(accounts) {
 
   })
 
-
-
-});
-
-contract ('DGPS user and company profitsharing', function(accounts) {
 
 
 });
