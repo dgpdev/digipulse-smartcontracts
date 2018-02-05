@@ -23,6 +23,7 @@ contract DgpsToken is StandardToken, SafeMath {
   address companyWallet = 0xf17f52151EbEF6C7334FAD080c5704D77216b732;
   address DGPTaddress = 0x0;
 
+
   uint public exchangeRate = 10000;
 
 

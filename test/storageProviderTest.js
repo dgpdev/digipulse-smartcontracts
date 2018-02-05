@@ -8,13 +8,13 @@ contract('Storage provider contract', function(accounts) {
   const vaultADDRESS = "0xc5fdf4076b8f3a5357c5e395ab970b5b54098fef";
 
 
-  it('Store new vault by address', async function() {
+  it('Store new vault', async function() {
     let DGPS = await storageContract.deployed();
     let tryStore = await DGPS.storeVault(vaultADDRESS, vaultID, vaultHASH);
     assert.ok (tryStore);
   });
 
-  it('Get newly stored vault by address. Should return all keys by the ID.', async function() {
+  it('Get newly stored vault by ID. Should return all keys by the ID.', async function() {
     let DGPS = await storageContract.deployed();
 
     let getID = await DGPS.getID(vaultID);
