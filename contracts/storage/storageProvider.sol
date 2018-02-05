@@ -25,7 +25,7 @@ contract storageProvider {
 
   mapping(string => VAULTS) DigiPulseVaultString;
 
-  function storeVaultByAddress(address _vaultAddress, string _vaultID, string _hash) public returns(address) {
+  function storeVault(address _vaultAddress, string _vaultID, string _hash) public returns(address) {
     var DigiPulseNewVault = DigiPulseVaultString[_vaultID];
 
     DigiPulseNewVault.vaultId = _vaultID;

@@ -10,7 +10,7 @@ contract('Storage provider contract', function(accounts) {
 
   it('Store new vault by address', async function() {
     let DGPS = await storageContract.deployed();
-    let tryStore = await DGPS.storeVaultByAddress(vaultADDRESS, vaultID, vaultHASH);
+    let tryStore = await DGPS.storeVault(vaultADDRESS, vaultID, vaultHASH);
     assert.ok (tryStore);
   });
 
