@@ -25,10 +25,11 @@ contract DgpsToken is StandardToken, SafeMath {
 
 
   uint public exchangeRate = 10000;
+  uint public contractLastPayout = 0;
 
 
   struct DGPS_Holder {
-    uint TokenAmount;
+    uint DgpsAmount;
     uint DigiPulseAmount;
     uint ReceivedProfitsDate;
     uint ProfitBalance;
@@ -45,9 +46,34 @@ contract DgpsToken is StandardToken, SafeMath {
   function DgpsToken() {
     balances[this] = 500 * 1e18;
     totalSupply = 500 * 1e18;
+    contractLastPayout = now;
   }
 
+  function () payable {
 
+  }
+
+  function updateBalances() {
+    require(now > contractLastPayout + 4 weeks);
+    require(tokenholderCounter > 0);
+
+    uint contractBalance = this.balance / 2;
+    uint entitledPayoutCompanyprofit = contractBalance / 100 * 25;
+    uint entitledPayoutUserprofit = contractBalance / 100 * 75 / countHolders();
+
+    for (uint i = 0; i < countHolders(); i++) {
+      if (HOLDERS[holderArray[i]].HolderAddress == companyWallet) {
+        HOLDERS[holderArray[i]].ProfitBalance = HOLDERS[holderArray[i]].ProfitBalance + entitledPayoutCompanyprofit;
+      }
+      HOLDERS[holderArray[i]].ProfitBalance = HOLDERS[holderArray[i]].ProfitBalance + entitledPayoutUserprofit;
+    }
+
+    contractLastPayout = now;
+  }
+
+  /*
+   * Used for DGPT deposit and exchanging to DgpsToken
+  */
   function depositToken(address token, address _from, uint amount) {
     require(token == DGPTaddress);
     if (!Token(token).transferFrom(msg.sender, this, amount)) throw;
@@ -60,6 +86,10 @@ contract DgpsToken is StandardToken, SafeMath {
     Deposit(token, msg.sender, amount, tokens[token][msg.sender]);
   }
 
+
+  /*
+   * User wants to get out and get his DGPT back.
+  */
   function withdrawToken(address token) {
     // Minimum 10k DGPT to withdraw
     uint amount = balances[msg.sender];
@@ -74,10 +104,13 @@ contract DgpsToken is StandardToken, SafeMath {
   }
 
 
-  function exchangeDGPTtoDGPS(address _address, uint _amount) {
+  /*
+   * Called by depositToken for exchanging DGPT to DgpsToken
+  */
+  function exchangeDGPTtoDGPS(address _address, uint _amount) private {
     var account = HOLDERS[_address];
 
-    account.TokenAmount = _amount;
+    account.DgpsAmount = _amount;
     account.ReceivedProfitsDate = now;
     account.ProfitBalance = 0;
     account.HolderAddress = _address;
@@ -94,8 +127,17 @@ contract DgpsToken is StandardToken, SafeMath {
     return tokens[token][user];
   }
 
+  function countHolders() view public returns(uint) {
+    return holderArray.length;
+  }
 
-  // For unit testing only, remove before live or keep if update is desired in future.
+  function getHolderProfitBalance(address _address) public view returns(uint) {
+    //DGPS_Holder storage account = DgpsHolders[_address];
+    uint ret = HOLDERS[_address].ProfitBalance;
+    return ret;
+  }
+
+  // NOTE: For unit testing only, remove before live or keep if update is desired in future.
   function setDGPTaddress(address _token) {
     DGPTaddress = _token;
   }

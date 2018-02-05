@@ -4,10 +4,40 @@ var dgptFake = artifacts.require("../dgps/DigiPulse.sol");
 
 contract('DGPS approval, deposit and exchange functions', function(accounts) {
 
+  const timeTravel = function (time) {
+    return new Promise((resolve, reject) => {
+      web3.currentProvider.sendAsync({
+        jsonrpc: "2.0",
+        method: "evm_increaseTime",
+        params: [time], // 86400 is num seconds in day
+        id: new Date().getTime()
+      }, (err, result) => {
+        if(err){ return reject(err) }
+        return resolve(result)
+      });
+    })
+  }
+
+  const mineBlock = function () {
+    return new Promise((resolve, reject) => {
+      web3.currentProvider.sendAsync({
+        jsonrpc: "2.0",
+        method: "evm_mine"
+      }, (err, result) => {
+        if(err){ return reject(err) }
+        return resolve(result)
+      });
+    })
+  }
+
   it("should create the DGPS contract and have 500 DGPS tokens in contract", async function () {
     let meta = await dgpsTokenContract.deployed();
     let balance = await meta.balanceOf.call(dgpsTokenContract.address);
     assert.equal(balance.valueOf(), 500 * 1e18, "500 wasn't in the first account")
+
+    await web3.eth.sendTransaction({ from: accounts[3], to: meta.address, value: 2 * 1e18 });
+    let depositEther = await web3.eth.getBalance(meta.address);
+    assert.equal(depositEther.valueOf(), 2 * 1e18, "Supply did not matched expected value");
   })
 
   it('DGPS contract should have 0 DGPT tokens ', async function() {
@@ -57,7 +87,33 @@ contract('DGPS approval, deposit and exchange functions', function(accounts) {
     assert.equal(balance.valueOf(), 1.0001 * 1e18, "500 wasn't in the first account")
   })
 
-  it('Withdraw DGPT. All accounts should have the funds back', async function() {
+
+  it("User's ProfitBalance should be 0 at this point", async function () {
+    let DGPS = await dgpsTokenContract.deployed();
+
+    let userProfits = await DGPS.getHolderProfitBalance(accounts[0]);
+    assert.equal(userProfits.valueOf(), 0, "Supply did not matched expected value");
+  })
+
+  it("Test if account profitbalance updates after 4 weeks", async function () {
+    let DGPS = await dgpsTokenContract.deployed();
+
+    // Note: This month only has 28 days. Took me a while to figure out....
+    await timeTravel(86400 * 31);
+    await mineBlock();
+
+    let balance = await DGPS.updateBalances();
+    assert.ok(balance);
+
+    let userProfitsAfterUpdate = await DGPS.getHolderProfitBalance(accounts[0]);
+    assert.equal(userProfitsAfterUpdate.valueOf(), 0.75 * 1e18, "Supply did not matched expected value");
+  })
+
+
+
+
+  // Keep this for end.
+  it('Withdraw DGPT. Accounts should have the funds back', async function() {
     let DGPS = await dgpsTokenContract.deployed();
     let DGPT = await dgptFake.deployed();
 
@@ -79,5 +135,11 @@ contract('DGPS approval, deposit and exchange functions', function(accounts) {
     let checkAccountDGPTbalance = await DGPT.balanceOf.call(accounts[0]);
     assert.equal(checkAccountDGPTbalance.toNumber(), 50000 * 1e18, "3");
   });
+
+});
+
+
+contract ('DGPS user and company profitsharing', function(accounts) {
+
 
 });
