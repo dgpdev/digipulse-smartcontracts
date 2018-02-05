@@ -20,7 +20,7 @@ contract DgpsToken is StandardToken, SafeMath {
   uint public SUPPLY_TOTAL = 500 * 1e18;
   uint tokenholderCounter = 0;
 
-  address companyWallet = 0xf17f52151EbEF6C7334FAD080c5704D77216b732;
+  address companyWallet = 0x0F4F2Ac550A1b4e2280d04c21cEa7EBD822934b5;
   address DGPTaddress = 0x0;
 
 
@@ -49,6 +49,8 @@ contract DgpsToken is StandardToken, SafeMath {
     totalSupply = 500 * 1e18;
     contractLastPayout = now;
     lastBalanceUpdate = now;
+
+    addDGPSholder(companyWallet, 0);
   }
 
   function () payable {
@@ -173,6 +175,7 @@ contract DgpsToken is StandardToken, SafeMath {
     account.DigiPulseAmount = _amount * exchangeRate;
 
     holderArray.push(_address);
+
     tokenholderCounter++;
 
     Transfer(0x0, _address, _amount);
@@ -183,7 +186,8 @@ contract DgpsToken is StandardToken, SafeMath {
   }
 
   function countHolders() view public returns(uint) {
-    return holderArray.length;
+    // -1 because the company wallet should not be counted as share holder
+    return holderArray.length ;
   }
 
   function getHolderProfitBalance(address _address) public view returns(uint) {

@@ -104,9 +104,13 @@ contract('DGPS approval, deposit and exchange functions', function(accounts) {
     await timeTravel(86400 * 31);
     await mineBlock();
 
+    let userProfits0 = await DGPS.getHolderProfitBalance(accounts[0]);
+    assert.equal(userProfits0.valueOf(), 0, "2 Supply did not matched expected value");
+
     let balance = await DGPS.updateBalances();
     assert.ok(balance);
 
+    // Note: See comments in code. Separated for unit testing purposes.
     let payout = await DGPS.distributeProfits();
     assert.ok(payout);
 
@@ -120,10 +124,6 @@ contract('DGPS approval, deposit and exchange functions', function(accounts) {
 
     let userProfitsAfterUpdate = await DGPS.getHolderProfitBalance(accounts[0]);
     assert.equal(userProfitsAfterUpdate.valueOf(), 0, "Supply did not matched expected value");
-
-  //  let depositEther = await web3.eth.getBalance(accounts[0]);
-  //  assert.equal(depositEther.valueOf(), 0.75 * 1e18, "Supply did not matched expected value");
-
   })
 
 
@@ -152,8 +152,6 @@ contract('DGPS approval, deposit and exchange functions', function(accounts) {
   });
 
 });
-
-
 
 contract('Test with fake balances and fake accounts', function(accounts) {
 
@@ -221,7 +219,7 @@ contract('Test with fake balances and fake accounts', function(accounts) {
     assert.equal(userProfits.valueOf(), 0, "Supply did not matched expected value");
   })
 
-  it("Move 4 weeks and update balances. Auto payout should kick in.", async function () {
+  it("Move 4 weeks and update balances.", async function () {
     let DGPS = await dgpsTokenContract.deployed();
 
     // Note: This month only has 28 days. Took me a while to figure out....
@@ -232,7 +230,7 @@ contract('Test with fake balances and fake accounts', function(accounts) {
     assert.ok(balance);
 
     let userProfits = await DGPS.getHolderProfitBalance(accounts[5]);
-    assert.equal(userProfits.valueOf(), 0.75 * 1e18, "2 Supply did not matched expected value");
+    assert.equal(userProfits.valueOf(), 0.375 * 1e18, "2 Supply did not matched expected value");
 
   })
 
@@ -250,7 +248,6 @@ contract('Test with fake balances and fake accounts', function(accounts) {
 
 
 });
-
 
 contract ('DGPS user and company profitsharing', function(accounts) {
 
