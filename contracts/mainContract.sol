@@ -33,7 +33,6 @@ contract mainContract is StandardToken, SafeMath {
     string payment_currency;
     bool approved;
     address signed;
-
   }
 
   address[] public TokenPurchaseArray;
@@ -88,13 +87,14 @@ contract mainContract is StandardToken, SafeMath {
    * remotePurchase - Used for remote API purchases. These can be called on the platform and then make a call to this function.
    * Can only be called from the allowedPurchaser wallet.
    *
-   *  uint _amount            Amount of DGPT tokens to send
-   *  address _destinator  Address of user to receive tokens
-   *  string _method        What method did we use? PayPal, Eth, Bitcoin, ....
-   *  string _currency      Shortcut for currency used. EUR, USD, ETH, PPL, ...
+   * uint _amount            Amount of DGPT tokens to send
+   * address _destinator  Address of user to receive tokens
+   * string _method        What method did we use? PayPal, Eth, Bitcoin, ....
+   * string _currency      Shortcut for currency used. EUR, USD, ETH, PPL, ...
    */
   function remotePurchase(uint _amount, address _destinator, string _method, string _currency) {
-    //require(msg.sender == allowedPurchaser);
+    // Only this specific account is allowed to call the function.
+    require(msg.sender == allowedPurchaser);
     buyTokens(_amount, _destinator, _method, _currency);
   }
 

@@ -110,17 +110,14 @@ contract('Main contract functions testing', function(accounts) {
     let meta = await mainContract.deployed();
     let DGPT = await dgptFake.deployed();
 
-    let depositDGPT = await meta.remotePurchase(175 * 1e18, accounts[1], "Paypal", "PPL", { from: accounts[1]});
+    await meta.setAllowedPurchaser(accounts[0]);
+
+    let depositDGPT = await meta.remotePurchase(175 * 1e18, accounts[1], "Paypal", "PPL", { from: accounts[0]});
     assert.ok(depositDGPT);
 
     let balanceAccount = await DGPT.balanceOf.call(accounts[1]);
     assert.equal(balanceAccount.valueOf(), 175 * 1e18, "10 wasn't in the first account")
-
   });
-
-
-
-
 
 
 });
