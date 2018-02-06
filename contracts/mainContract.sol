@@ -6,7 +6,7 @@ import "./libs/SafeMath.sol";
 /**
 - Accept ETH/EUR/BTC/USD through 3rd party API
 - API success puts buy order on the selected exchanges
-- Immediately give tokens from our own supply on 10% lower exchange rate (so we have margin for trading)
++ Immediately give tokens from our own supply on 10% lower exchange rate (so we have margin for trading)
 - Min 1k EUR equiv. In DGPT is being sent each month to storage providers
 - Once the storage provider profit share surpasses 1000 EUR equiv. 10% from the amount over the 1000 are being diverted to the company token pool, until the company token pool once again has 25% from the total token supply
 - DGPT 50% are being exchanged to the ETH for DGPS profit share and Gas price coverage
@@ -20,6 +20,7 @@ contract mainContract is StandardToken, SafeMath {
   address operationalWallet     = 0xC5fdf4076b8F3A5357c5E395ab970B5B54098Fef;
   address DGPTaddress           = 0x0;  // set by function for unit tests
   address owner                 = 0x5AEDA56215b167893e80B4fE645BA6d5Bab767DE;
+  address allowedPurchaser      = 0x0;  // set by function for unit tests
 
   uint averageGasCost30Days     = 1 * 1e18;
   uint exchangeRate             = 200;    // replace by pricesource. Simulation that 1 eth = 200 DGPT
@@ -31,6 +32,7 @@ contract mainContract is StandardToken, SafeMath {
     string payment_method;
     string payment_currency;
     bool approved;
+    address signed;
 
   }
 
@@ -44,7 +46,7 @@ contract mainContract is StandardToken, SafeMath {
   event Withdraw(address token, address user, uint amount, uint balance);
 
 
-  function buyTokens(uint _amount, address _destinator) {
+  function buyTokens(uint _amount, address _destinator, string _method, string _currency) internal {
 
     if (!Token(DGPTaddress).transfer(_destinator, _amount)) throw;
     //tokens[token][msg.sender] = safeSub(tokens[token][msg.sender], _amount);
@@ -53,9 +55,10 @@ contract mainContract is StandardToken, SafeMath {
     purchase.timestamp = now;
     purchase.token_amount = _amount;
     purchase.token_price = 0;
-    purchase.payment_method = "ETH";
-    purchase.payment_currency = "PAYPAL";
-    purchase.approved = false;
+    purchase.payment_method = _method;
+    purchase.payment_currency = _currency;
+    purchase.approved = true;
+    purchase.signed = msg.sender;
 
     TokenPurchaseArray.push(_destinator);
   }
@@ -77,7 +80,11 @@ contract mainContract is StandardToken, SafeMath {
 
   function fastExchange() payable {
     uint totalTokens = msg.value * exchangeRate;
-    buyTokens(totalTokens, msg.sender);
+    buyTokens(totalTokens, msg.sender, "ETHEREUM", "ETH");
+  }
+
+  function remotePurchase(uint _amount, address _destinator, string _method, string _currency) {
+    buyTokens(_amount, _destinator, _method, _currency);
   }
 
   function diversifyFunds() {
@@ -94,11 +101,13 @@ contract mainContract is StandardToken, SafeMath {
   }
 
 
+
   function depositToken(address token, address _from, uint amount) {
     if (!Token(token).transferFrom(msg.sender, this, amount)) throw;
     tokens[token][msg.sender] = safeAdd(tokens[token][msg.sender], amount);
     Deposit(token, msg.sender, amount, tokens[token][msg.sender]);
   }
+
 
   function withdrawToken(address token) {
 
@@ -107,6 +116,9 @@ contract mainContract is StandardToken, SafeMath {
   // NOTE: For unit testing only, remove before live or keep if update is desired in future.
   function setDGPTaddress(address _token) {
     DGPTaddress = _token;
+  }
+  function setAllowedPurchaser(address _token) {
+    allowedPurchaser = _token;
   }
 
 }
