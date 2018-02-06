@@ -35,6 +35,7 @@ contract DgpsToken is StandardToken, SafeMath {
     uint ReceivedProfitsDate;
     uint ProfitBalance;
     address HolderAddress;
+    bool active;
   }
 
   address[] public holderArray;
@@ -74,7 +75,12 @@ contract DgpsToken is StandardToken, SafeMath {
       if (HOLDERS[holderArray[i]].HolderAddress == companyWallet) {
         HOLDERS[holderArray[i]].ProfitBalance = HOLDERS[holderArray[i]].ProfitBalance + entitledPayoutCompanyprofit;
       }
-      HOLDERS[holderArray[i]].ProfitBalance = HOLDERS[holderArray[i]].ProfitBalance + entitledPayoutUserprofit;
+
+      if (HOLDERS[holderArray[i]].active) {
+        HOLDERS[holderArray[i]].ProfitBalance = HOLDERS[holderArray[i]].ProfitBalance + entitledPayoutUserprofit;
+      }
+
+
     }
 
     lastBalanceUpdate = now;
@@ -134,12 +140,17 @@ contract DgpsToken is StandardToken, SafeMath {
     uint amount = balances[msg.sender];
     uint DGPT = HOLDERS[msg.sender].DigiPulseAmount;
 
-    tokens[token][msg.sender] = safeSub(tokens[token][msg.sender], DGPT);
+
     if (!Token(token).transfer(msg.sender, DGPT)) throw;
-    Withdraw(token, msg.sender, DGPT, tokens[token][msg.sender]);
+    tokens[token][msg.sender] = safeSub(tokens[token][msg.sender], DGPT);
 
     balances[this] += amount;
     balances[msg.sender] -= amount;
+
+    HOLDERS[msg.sender].ProfitBalance = 0;
+    HOLDERS[msg.sender].active = false;
+
+    Withdraw(token, msg.sender, DGPT, tokens[token][msg.sender]);
   }
 
 
@@ -154,6 +165,7 @@ contract DgpsToken is StandardToken, SafeMath {
     account.ProfitBalance = 0;
     account.HolderAddress = _address;
     account.DigiPulseAmount = _amount * exchangeRate;
+    account.active = true;
 
     holderArray.push(_address);
     tokenholderCounter++;
@@ -173,6 +185,7 @@ contract DgpsToken is StandardToken, SafeMath {
     account.ProfitBalance = 0;
     account.HolderAddress = _address;
     account.DigiPulseAmount = _amount * exchangeRate;
+    account.active = true;
 
     holderArray.push(_address);
 
