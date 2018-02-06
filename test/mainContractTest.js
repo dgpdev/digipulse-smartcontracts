@@ -106,6 +106,7 @@ contract('Main contract functions testing', function(accounts) {
     assert.equal(balanceAccount.valueOf(), 200 * 1e18, "10 wasn't in the first account")
   });
 
+  
 
 
 
