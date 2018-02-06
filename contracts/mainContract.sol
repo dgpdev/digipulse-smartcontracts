@@ -88,10 +88,10 @@ contract mainContract is StandardToken, SafeMath {
    * remotePurchase - Used for remote API purchases. These can be called on the platform and then make a call to this function.
    * Can only be called from the allowedPurchaser wallet.
    *
-   * @param  {uint} uint _amount            Amount of DGPT tokens to send
-   * @param  {address} address _destinator  Address of user to receive tokens
-   * @param  {string} string _method        What method did we use? PayPal, Eth, Bitcoin, ....
-   * @param  {string} string _currency      Shortcut for currency used. EUR, USD, ETH, PPL, ...
+   *  uint _amount            Amount of DGPT tokens to send
+   *  address _destinator  Address of user to receive tokens
+   *  string _method        What method did we use? PayPal, Eth, Bitcoin, ....
+   *  string _currency      Shortcut for currency used. EUR, USD, ETH, PPL, ...
    */
   function remotePurchase(uint _amount, address _destinator, string _method, string _currency) {
     require(msg.sender == allowedPurchaser);
@@ -119,9 +119,9 @@ contract mainContract is StandardToken, SafeMath {
   /**
    * depositToken - Allows us to deposit DGPT (and other) token on the contract.
    *
-   * @param  {address} address token    What token will we deposit?
-   * @param  {address} address _from    can be removed
-   * @param  {uint} uint amount         how many tokens will we deposit?
+   * address token    What token will we deposit?
+   * address _from    can be removed
+   * uint amount         how many tokens will we deposit?
    */
   function depositToken(address token, address _from, uint amount) {
     if (!Token(token).transferFrom(msg.sender, this, amount)) throw;
