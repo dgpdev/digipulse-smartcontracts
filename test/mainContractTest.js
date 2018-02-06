@@ -65,7 +65,7 @@ contract('Main contract functions testing', function(accounts) {
     assert.equal(profitBalance.valueOf(), expectedProfitsharing);
 
     let operationalBalance = await web3.eth.getBalance("0xC5fdf4076b8F3A5357c5E395ab970B5B54098Fef");
-    assert.equal(operationalBalance.valueOf(), expectedOperational;
+    assert.equal(operationalBalance.valueOf(), expectedOperational);
   })
 
   it('Main contract should have 0 DGPT tokens. Call / approve for 20k DGPT ', async function() {
@@ -83,7 +83,7 @@ contract('Main contract functions testing', function(accounts) {
   });
 
 
-  it('We should now should be able to deposit 10001 tokens to meta contract as funding', async function() {
+  it('We should now should be able to deposit 10000 tokens to meta contract as funding', async function() {
     let meta = await mainContract.deployed();
     let DGPT = await dgptFake.deployed();
 
@@ -92,6 +92,21 @@ contract('Main contract functions testing', function(accounts) {
 
     let currentBalance = await meta.tokens.call(DGPT.address, accounts[0]);
     assert.equal(currentBalance.toNumber(), 10000 * 1e18);
+  });
+
+  it('We can buy DGPT from the contract now at discounted prices', async function() {
+    let meta = await mainContract.deployed();
+    let DGPT = await dgptFake.deployed();
+
+    let depositDGPT = await meta.buyTokens(DGPT.address, 500 * 1e18, accounts[4], {from: accounts[4]});
+    assert.ok(depositDGPT);
+
+    let balance = await DGPT.balanceOf.call(meta.address);
+    assert.equal(balance.valueOf(), 9500 * 1e18, "10 wasn't in the first account")
+
+    let balanceAccount = await DGPT.balanceOf.call(accounts[4]);
+    assert.equal(balanceAccount.valueOf(), 500 * 1e18, "10 wasn't in the first account")
+
   });
 
 

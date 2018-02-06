@@ -12,7 +12,6 @@ import "./libs/SafeMath.sol";
 - DGPT 50% are being exchanged to the ETH for DGPS profit share and Gas price coverage
 + 75% of ETH received on the smart contract are being sent over to DGPS smart contract as profit share,
 * while 25% are sent to the wallet which operates with the smart contract for gas cost coverage for 30 days. After 30 days the remainder of “25% Gas ETH” is also sent as profit sharing.
-
  */
 
 contract mainContract is StandardToken, SafeMath {
@@ -22,16 +21,47 @@ contract mainContract is StandardToken, SafeMath {
 
   uint averageGasCost30Days     = 1 * 1e18;
 
+  struct TokenPurchase {
+    uint timestamp;
+    uint token_amount;
+    uint token_price;
+    string payment_method;
+    string payment_currency;
+    bool approved;
+
+  }
+
+  address[] public TokenPurchaseArray;
+
+  mapping(address => TokenPurchase) TokenPurchases;
   mapping(address => mapping(address => uint)) public tokens;
+
 
   event Deposit(address token, address user, uint amount, uint balance);
   event Withdraw(address token, address user, uint amount, uint balance);
 
-  function sellTokens() {
 
+  function buyTokens(address token, uint _amount, address _destinator) {
+
+    if (!Token(token).transfer(_destinator, _amount)) throw;
+    //tokens[token][msg.sender] = safeSub(tokens[token][msg.sender], _amount);
+
+    var purchase = TokenPurchases[_destinator];
+    purchase.timestamp = now;
+    purchase.token_amount = _amount;
+    purchase.token_price = 0;
+    purchase.payment_method = "ETH";
+    purchase.payment_currency = "PAYPAL";
+    purchase.approved = false;
+
+    TokenPurchaseArray.push(_destinator);
   }
 
   function mainContract() {
+
+  /**
+   *
+   */
 
   }
 
@@ -50,7 +80,6 @@ contract mainContract is StandardToken, SafeMath {
     if (!operationalWallet.send(fundOperational)) {
       revert();
     }
-
   }
 
 
