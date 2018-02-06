@@ -18,8 +18,11 @@ contract mainContract is StandardToken, SafeMath {
 
   address profitSharingContract = 0xf17f52151EbEF6C7334FAD080c5704D77216b732;
   address operationalWallet     = 0xC5fdf4076b8F3A5357c5E395ab970B5B54098Fef;
+  address DGPTaddress           = 0x0;  // set by function for unit tests
+  address owner                 = 0x5AEDA56215b167893e80B4fE645BA6d5Bab767DE;
 
   uint averageGasCost30Days     = 1 * 1e18;
+  uint exchangeRate             = 200;    // replace by pricesource. Simulation that 1 eth = 200 DGPT
 
   struct TokenPurchase {
     uint timestamp;
@@ -41,9 +44,9 @@ contract mainContract is StandardToken, SafeMath {
   event Withdraw(address token, address user, uint amount, uint balance);
 
 
-  function buyTokens(address token, uint _amount, address _destinator) {
+  function buyTokens(uint _amount, address _destinator) {
 
-    if (!Token(token).transfer(_destinator, _amount)) throw;
+    if (!Token(DGPTaddress).transfer(_destinator, _amount)) throw;
     //tokens[token][msg.sender] = safeSub(tokens[token][msg.sender], _amount);
 
     var purchase = TokenPurchases[_destinator];
@@ -66,7 +69,15 @@ contract mainContract is StandardToken, SafeMath {
   }
 
   function () payable {
+    /**
+     * Heads up. Owner should always be able to fund contract without receiving tokens.
+     * Place this in a if then else condition before live.
+     */
+  }
 
+  function fastExchange() payable {
+    uint totalTokens = msg.value * exchangeRate;
+    buyTokens(totalTokens, msg.sender);
   }
 
   function diversifyFunds() {
@@ -93,5 +104,9 @@ contract mainContract is StandardToken, SafeMath {
 
   }
 
+  // NOTE: For unit testing only, remove before live or keep if update is desired in future.
+  function setDGPTaddress(address _token) {
+    DGPTaddress = _token;
+  }
 
 }

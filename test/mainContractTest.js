@@ -80,6 +80,8 @@ contract('Main contract functions testing', function(accounts) {
 
     let allowance = await DGPT.allowance(accounts[0], meta.address);
     assert.equal(allowance, 20000 * 1e18);
+
+    await meta.setDGPTaddress(DGPT.address);
   });
 
 
@@ -98,7 +100,7 @@ contract('Main contract functions testing', function(accounts) {
     let meta = await mainContract.deployed();
     let DGPT = await dgptFake.deployed();
 
-    let depositDGPT = await meta.buyTokens(DGPT.address, 500 * 1e18, accounts[4], {from: accounts[4]});
+    let depositDGPT = await meta.buyTokens(500 * 1e18, accounts[4], {from: accounts[4]});
     assert.ok(depositDGPT);
 
     let balance = await DGPT.balanceOf.call(meta.address);
@@ -108,6 +110,18 @@ contract('Main contract functions testing', function(accounts) {
     assert.equal(balanceAccount.valueOf(), 500 * 1e18, "10 wasn't in the first account")
 
   });
+
+  it('fastExchange should give us tokens at -10% of the price straight away', async function() {
+    let meta = await mainContract.deployed();
+    let DGPT = await dgptFake.deployed();
+
+    let depositDGPT = await meta.fastExchange({ from: accounts[7], value: 1 * 1e18 });
+    assert.ok(depositDGPT);
+
+    let balanceAccount = await DGPT.balanceOf.call(accounts[7]);
+    assert.equal(balanceAccount.valueOf(), 200 * 1e18, "10 wasn't in the first account")
+  });
+
 
 
 
