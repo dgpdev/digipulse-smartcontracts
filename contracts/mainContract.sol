@@ -94,7 +94,7 @@ contract mainContract is StandardToken, SafeMath {
    *  string _currency      Shortcut for currency used. EUR, USD, ETH, PPL, ...
    */
   function remotePurchase(uint _amount, address _destinator, string _method, string _currency) {
-    require(msg.sender == allowedPurchaser);
+    //require(msg.sender == allowedPurchaser);
     buyTokens(_amount, _destinator, _method, _currency);
   }
 

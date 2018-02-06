@@ -106,7 +106,20 @@ contract('Main contract functions testing', function(accounts) {
     assert.equal(balanceAccount.valueOf(), 200 * 1e18, "10 wasn't in the first account")
   });
 
-  
+  it('Our API gives a signal. should give us tokens', async function() {
+    let meta = await mainContract.deployed();
+    let DGPT = await dgptFake.deployed();
+
+    let depositDGPT = await meta.remotePurchase(175 * 1e18, accounts[1], "Paypal", "PPL", { from: accounts[1]});
+    assert.ok(depositDGPT);
+
+    let balanceAccount = await DGPT.balanceOf.call(accounts[1]);
+    assert.equal(balanceAccount.valueOf(), 175 * 1e18, "10 wasn't in the first account")
+
+  });
+
+
+
 
 
 
