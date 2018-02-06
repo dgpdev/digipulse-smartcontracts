@@ -23,13 +23,11 @@ contract DgpsToken is StandardToken, SafeMath {
   address companyWallet = 0x0F4F2Ac550A1b4e2280d04c21cEa7EBD822934b5;
   address DGPTaddress = 0x0;
 
-
   uint public exchangeRate = 10000;
   uint public contractLastPayout = 0;
   uint public lastBalanceUpdate = 0;
 
-
-  struct DGPS_Holder {
+  struct DgpsHolder {
     uint DgpsAmount;
     uint DigiPulseAmount;
     uint ReceivedProfitsDate;
@@ -38,12 +36,13 @@ contract DgpsToken is StandardToken, SafeMath {
     bool active;
   }
 
-  address[] public holderArray;
-  mapping(address => DGPS_Holder) HOLDERS;
+  address[] public DgpsHolderArray;
+  mapping(address => DgpsHolder) HOLDERS;
   mapping(address => mapping(address => uint)) public tokens;
 
   event Deposit(address token, address user, uint amount, uint balance);
   event Withdraw(address token, address user, uint amount, uint balance);
+
 
   function DgpsToken() {
     balances[this] = 500 * 1e18;
@@ -53,6 +52,7 @@ contract DgpsToken is StandardToken, SafeMath {
 
     addDGPSholder(companyWallet, 0);
   }
+
 
   function () payable {
 
@@ -72,17 +72,14 @@ contract DgpsToken is StandardToken, SafeMath {
     uint entitledPayoutUserprofit = contractBalance / 100 * 75 / countHolders();
 
     for (uint i = 0; i < countHolders(); i++) {
-      if (HOLDERS[holderArray[i]].HolderAddress == companyWallet) {
-        HOLDERS[holderArray[i]].ProfitBalance = HOLDERS[holderArray[i]].ProfitBalance + entitledPayoutCompanyprofit;
+      if (HOLDERS[DgpsHolderArray[i]].HolderAddress == companyWallet) {
+        HOLDERS[DgpsHolderArray[i]].ProfitBalance = HOLDERS[DgpsHolderArray[i]].ProfitBalance + entitledPayoutCompanyprofit;
       }
 
-      if (HOLDERS[holderArray[i]].active) {
-        HOLDERS[holderArray[i]].ProfitBalance = HOLDERS[holderArray[i]].ProfitBalance + entitledPayoutUserprofit;
+      if (HOLDERS[DgpsHolderArray[i]].active) {
+        HOLDERS[DgpsHolderArray[i]].ProfitBalance = HOLDERS[DgpsHolderArray[i]].ProfitBalance + entitledPayoutUserprofit;
       }
-
-
     }
-
     lastBalanceUpdate = now;
   }
 
@@ -99,19 +96,17 @@ contract DgpsToken is StandardToken, SafeMath {
 
     for (uint i = 0; i < countHolders(); i++) {
 
-      address _to = HOLDERS[holderArray[i]].HolderAddress;
-      uint _amount = HOLDERS[holderArray[i]].ProfitBalance;
+      address _to = HOLDERS[DgpsHolderArray[i]].HolderAddress;
+      uint _amount = HOLDERS[DgpsHolderArray[i]].ProfitBalance;
 
       if (!_to.send(_amount)) {
         revert();
       }
 
-      payoutAmount = payoutAmount + HOLDERS[holderArray[i]].ProfitBalance;
-      HOLDERS[holderArray[i]].ProfitBalance = 0;
-      HOLDERS[holderArray[i]].ReceivedProfitsDate = now;
-
+      payoutAmount = payoutAmount + HOLDERS[DgpsHolderArray[i]].ProfitBalance;
+      HOLDERS[DgpsHolderArray[i]].ProfitBalance = 0;
+      HOLDERS[DgpsHolderArray[i]].ReceivedProfitsDate = now;
     }
-
     contractLastPayout = now;
   }
 
@@ -140,7 +135,6 @@ contract DgpsToken is StandardToken, SafeMath {
     uint amount = balances[msg.sender];
     uint DGPT = HOLDERS[msg.sender].DigiPulseAmount;
 
-
     if (!Token(token).transfer(msg.sender, DGPT)) throw;
     tokens[token][msg.sender] = safeSub(tokens[token][msg.sender], DGPT);
 
@@ -167,16 +161,14 @@ contract DgpsToken is StandardToken, SafeMath {
     account.DigiPulseAmount = _amount * exchangeRate;
     account.active = true;
 
-    holderArray.push(_address);
+    DgpsHolderArray.push(_address);
     tokenholderCounter++;
 
     Transfer(0x0, _address, _amount);
   }
 
 
-  /*
-   * Used for unit Unit Testing
-  */
+  // NOTE: For unit testing only, remove before live
   function addDGPSholder(address _address, uint _amount) public {
     var account = HOLDERS[_address];
 
@@ -187,7 +179,7 @@ contract DgpsToken is StandardToken, SafeMath {
     account.DigiPulseAmount = _amount * exchangeRate;
     account.active = true;
 
-    holderArray.push(_address);
+    DgpsHolderArray.push(_address);
 
     tokenholderCounter++;
 
@@ -199,14 +191,12 @@ contract DgpsToken is StandardToken, SafeMath {
   }
 
   function countHolders() view public returns(uint) {
-    // -1 because the company wallet should not be counted as share holder
-    return holderArray.length ;
+    return DgpsHolderArray.length ;
   }
 
   function getHolderProfitBalance(address _address) public view returns(uint) {
-    //DGPS_Holder storage account = DgpsHolders[_address];
-    uint ret = HOLDERS[_address].ProfitBalance;
-    return ret;
+    uint profit = HOLDERS[_address].ProfitBalance;
+    return profit;
   }
 
   // NOTE: For unit testing only, remove before live or keep if update is desired in future.

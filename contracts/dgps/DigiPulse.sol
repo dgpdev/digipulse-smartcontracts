@@ -17,7 +17,7 @@ contract DigiPulse is StandardToken {
   uint public SUPPLY_TOTAL = 800 * 1e18;
 
   function DigiPulse() {
-    balances[msg.sender] = 50000 * 1e18; // Tokens to be issued during the crowdsale
+    balances[msg.sender] = 50000 * 1e18; 
     Transfer(0x0, this, 50000 * 1e18);
     totalSupply = 50000 * 1e18;
   }
